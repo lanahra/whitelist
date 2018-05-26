@@ -9,6 +9,7 @@ import java.util.regex.PatternSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,6 +27,9 @@ public class Service {
 
     @Autowired
     private WhitelistRepository whitelistRepository;
+
+    @Autowired
+    private RabbitTemplate validationTemplate;
 
     @RabbitListener(queues = "${INSERTION_QUEUE}")
     public void listenInsertionQueue(@Valid @Payload Expression expression) {
@@ -78,5 +82,6 @@ public class Service {
         }
 
         LOGGER.info("Send " + response.toString());
+        validationTemplate.convertAndSend(response);
     }
 }

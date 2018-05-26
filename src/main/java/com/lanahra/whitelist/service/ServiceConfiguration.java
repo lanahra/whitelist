@@ -1,5 +1,7 @@
 package com.lanahra.whitelist.service;
 
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.Queue;
@@ -7,6 +9,7 @@ import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,12 @@ public class ServiceConfiguration implements RabbitListenerConfigurer {
 
     @Value("${VALIDATION_QUEUE}")
     private String validationQueueName;
+
+    @Value("${RESPONSE_EXCHANGE}")
+    private String validationExchangeName;
+
+    @Value("${RESPONSE_ROUTING_KEY}")
+    private String validationRoutingKey;
 
     @Value("${NUMBER_OF_VALIDATION_CONSUMERS}")
     private Integer numberValidationConsumers;
@@ -67,11 +76,25 @@ public class ServiceConfiguration implements RabbitListenerConfigurer {
 
     @Bean
     public Queue insertionQueue() {
-        return new Queue(insertionQueueName, true);
+        return new Queue(insertionQueueName);
     }
 
     @Bean
     public Queue validationQueue() {
-        return new Queue(validationQueueName, true);
+        return new Queue(validationQueueName);
+    }
+
+    @Bean
+    public Exchange validationExchange() {
+        return new DirectExchange(validationExchangeName);
+    }
+
+    @Bean
+    public RabbitTemplate validationTemplate() {
+        RabbitTemplate template = new RabbitTemplate(rabbitConnectionFactory);
+        template.setExchange(validationExchangeName);
+        template.setRoutingKey(validationRoutingKey);
+        template.setMessageConverter(new Jackson2JsonMessageConverter());
+        return template;
     }
 }
