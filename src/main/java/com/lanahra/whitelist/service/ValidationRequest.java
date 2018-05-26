@@ -1,9 +1,19 @@
 package com.lanahra.whitelist.service;
 
-public class ValidationMessage {
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
+public class ValidationRequest {
+
+    @NotNull
+    @Size(min = 1, max = 128)
     private String client;
+
+    @NotNull
+    @Size(min = 1, max = 128)
     private String url;
+
+    @NotNull
     private Integer correlationId;
 
     public String getClient() {
@@ -32,7 +42,7 @@ public class ValidationMessage {
 
     @Override
     public String toString() {
-        return "ValidationMessage [client="
+        return "ValidationRequest [client="
             + client
             + ", url="
             + url

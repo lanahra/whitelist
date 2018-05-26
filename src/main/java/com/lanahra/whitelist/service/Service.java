@@ -29,7 +29,7 @@ public class Service {
 
     @RabbitListener(queues = "${INSERTION_QUEUE}")
     public void listenInsertionQueue(@Valid @Payload Expression expression) {
-        LOGGER.info("Received " + expression.toString());
+        LOGGER.info("Receive " + expression.toString());
 
         try {
             Pattern.compile(expression.getRegex());
@@ -50,7 +50,33 @@ public class Service {
     }
 
     @RabbitListener(queues = "${VALIDATION_QUEUE}")
-    public void listenValidationQueue(ValidationMessage message) {
-        LOGGER.info("Received " + message.toString());
+    public void listenValidationQueue(@Valid @Payload ValidationRequest request) {
+        LOGGER.info("Receive " + request.toString());
+
+        ValidationResponse response = new ValidationResponse();
+        response.setMatch(false);
+        response.setCorrelationId(request.getCorrelationId());
+
+        for (GlobalExpression expression : globalWhitelistRepository.findAll()) {
+            String regex = expression.getRegex();
+
+            if (Pattern.matches(regex, request.getUrl())) {
+                response.setMatch(true);
+                response.setRegex(regex);
+                break;
+            }
+        }
+
+        for (Expression expression : whitelistRepository.findExpressionByClient(request.getClient())) {
+            String regex = expression.getRegex();
+
+            if (Pattern.matches(regex, request.getUrl())) {
+                response.setMatch(true);
+                response.setRegex(regex);
+                break;
+            }
+        }
+
+        LOGGER.info("Send " + response.toString());
     }
 }
