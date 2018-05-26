@@ -22,6 +22,9 @@ public class Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Service.class);
 
+    private static final String INSERTION_FACTORY = "insertionListenerContainerFactory";
+    private static final String VALIDATION_FACTORY = "validationListenerContainerFactory";
+
     @Autowired
     private GlobalWhitelistRepository globalWhitelistRepository;
 
@@ -31,7 +34,7 @@ public class Service {
     @Autowired
     private RabbitTemplate validationTemplate;
 
-    @RabbitListener(queues = "${INSERTION_QUEUE}")
+    @RabbitListener(queues = "${INSERTION_QUEUE}", containerFactory = INSERTION_FACTORY)
     public void listenInsertionQueue(@Valid @Payload Expression expression) {
         LOGGER.info("Receive " + expression.toString());
 
@@ -53,7 +56,7 @@ public class Service {
         }
     }
 
-    @RabbitListener(queues = "${VALIDATION_QUEUE}")
+    @RabbitListener(queues = "${VALIDATION_QUEUE}", containerFactory = VALIDATION_FACTORY)
     public void listenValidationQueue(@Valid @Payload ValidationRequest request) {
         LOGGER.info("Receive " + request.toString());
 

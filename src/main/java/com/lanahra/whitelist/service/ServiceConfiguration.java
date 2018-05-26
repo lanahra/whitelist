@@ -45,21 +45,32 @@ public class ServiceConfiguration implements RabbitListenerConfigurer {
     private Integer numberValidationConsumers;
 
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
+    public SimpleRabbitListenerContainerFactory insertionListenerContainerFactory() {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(rabbitConnectionFactory);
+        factory.setMessageConverter(new Jackson2JsonMessageConverter());
+        factory.setAfterReceivePostProcessors(jsonPostProcessor());
+        return factory;
+    }
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory validationListenerContainerFactory() {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(rabbitConnectionFactory);
         factory.setConcurrentConsumers(numberValidationConsumers);
-        factory.setMaxConcurrentConsumers(numberValidationConsumers);
         factory.setMessageConverter(new Jackson2JsonMessageConverter());
+        factory.setAfterReceivePostProcessors(jsonPostProcessor());
+        return factory;
+    }
 
-        factory.setAfterReceivePostProcessors(new MessagePostProcessor() {
+    @Bean
+    public MessagePostProcessor jsonPostProcessor() {
+        return new MessagePostProcessor() {
             public Message postProcessMessage(Message message) {
                 message.getMessageProperties().setContentType("application/json");
                 return message;
             }
-        });
-
-        return factory;
+        };
     }
 
     @Override
