@@ -1,39 +1,19 @@
 package com.lanahra.whitelist.entity;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-public class GlobalExpression {
+@Table(name = "global_whitelist",
+uniqueConstraints = {@UniqueConstraint(columnNames = {"regex"})})
+public class GlobalExpression extends Expression {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
-
-    @NotNull
-    @Size(min = 1, max = 128)
-    @Column(unique = true)
-    private String regex;
-
-    public Integer getId() {
-        return id;
+    public GlobalExpression() {
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getRegex() {
-        return regex;
-    }
-
-    public void setRegex(String regex) {
-        this.regex = regex;
+    public GlobalExpression(Expression expression) {
+        regex = expression.regex;
     }
 
     @Override

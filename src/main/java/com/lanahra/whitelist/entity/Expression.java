@@ -1,17 +1,15 @@
 package com.lanahra.whitelist.entity;
 
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-@Entity
-@Table(name = "whitelist",
-uniqueConstraints = {@UniqueConstraint(columnNames = {"client", "regex"})})
+@MappedSuperclass
 public class Expression {
 
     @Id
@@ -19,11 +17,11 @@ public class Expression {
     private Integer id;
 
     @Size(min = 1, max = 128)
-    private String client;
+    protected String client;
 
     @NotNull
     @Size(min = 1, max = 128)
-    private String regex;
+    protected String regex;
 
     public Integer getId() {
         return id;

@@ -1,11 +1,16 @@
 package com.lanahra.whitelist.service;
 
 import com.lanahra.whitelist.entity.Expression;
+import com.lanahra.whitelist.entity.ClientExpression;
+import com.lanahra.whitelist.entity.ClientWhitelistRepository;
 import com.lanahra.whitelist.entity.GlobalExpression;
 import com.lanahra.whitelist.entity.GlobalWhitelistRepository;
-import com.lanahra.whitelist.entity.WhitelistRepository;
+import java.lang.Exception;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -15,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import javax.validation.Valid;
 
 @Component
 public class Service {
@@ -29,7 +33,7 @@ public class Service {
     private GlobalWhitelistRepository globalWhitelistRepository;
 
     @Autowired
-    private WhitelistRepository whitelistRepository;
+    private ClientWhitelistRepository clientWhitelistRepository;
 
     @Autowired
     private RabbitTemplate validationTemplate;
@@ -42,12 +46,9 @@ public class Service {
             Pattern.compile(expression.getRegex());
 
             if (expression.getClient() == null) {
-                GlobalExpression globalExpression = new GlobalExpression();
-                globalExpression.setRegex(expression.getRegex());
-
-                globalWhitelistRepository.save(globalExpression);
+                globalWhitelistRepository.save(new GlobalExpression(expression));
             } else {
-                whitelistRepository.save(expression);
+                clientWhitelistRepository.save(new ClientExpression(expression));
             }
         } catch (PatternSyntaxException e) {
             LOGGER.info("Bad RegEx: " + e.toString());
@@ -64,17 +65,13 @@ public class Service {
         response.setMatch(false);
         response.setCorrelationId(request.getCorrelationId());
 
-        for (GlobalExpression expression : globalWhitelistRepository.findAll()) {
-            String regex = expression.getRegex();
+        String client = request.getClient();
 
-            if (Pattern.matches(regex, request.getUrl())) {
-                response.setMatch(true);
-                response.setRegex(regex);
-                break;
-            }
-        }
+        List<Expression> expressions = new ArrayList<>();
+        globalWhitelistRepository.findAll().forEach(expressions::add);
+        clientWhitelistRepository.findByClient(client).forEach(expressions::add);
 
-        for (Expression expression : whitelistRepository.findExpressionByClient(request.getClient())) {
+        for (Expression expression : expressions) {
             String regex = expression.getRegex();
 
             if (Pattern.matches(regex, request.getUrl())) {
