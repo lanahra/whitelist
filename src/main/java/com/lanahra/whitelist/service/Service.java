@@ -9,7 +9,6 @@ import java.lang.Exception;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,15 +42,11 @@ public class Service {
         LOGGER.info("Receive " + expression.toString());
 
         try {
-            Pattern.compile(expression.getRegex());
-
             if (expression.getClient() == null) {
                 globalWhitelistRepository.save(new GlobalExpression(expression));
             } else {
                 clientWhitelistRepository.save(new ClientExpression(expression));
             }
-        } catch (PatternSyntaxException e) {
-            LOGGER.info("Bad RegEx: " + e.toString());
         } catch (DataIntegrityViolationException e) {
             LOGGER.info("Create Failed: " + e.getRootCause().toString());
         }

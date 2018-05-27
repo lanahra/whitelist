@@ -1,5 +1,6 @@
 package com.lanahra.whitelist.entity;
 
+import com.lanahra.whitelist.validation.ValidPattern;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,6 +21,7 @@ public class Expression {
     protected String client;
 
     @NotNull
+    @ValidPattern
     @Size(min = 1, max = 128)
     protected String regex;
 
