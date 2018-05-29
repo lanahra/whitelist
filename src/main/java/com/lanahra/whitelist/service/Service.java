@@ -17,6 +17,9 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +30,8 @@ public class Service {
 
     private static final String INSERTION_FACTORY = "insertionListenerContainerFactory";
     private static final String VALIDATION_FACTORY = "validationListenerContainerFactory";
+
+    private static final int PAGE_SIZE = 10000;
 
     @Autowired
     private GlobalWhitelistRepository globalWhitelistRepository;
@@ -56,27 +61,55 @@ public class Service {
     public void listenValidationQueue(@Valid @Payload ValidationRequest request) {
         LOGGER.info("Receive " + request.toString());
 
+        long start = System.currentTimeMillis();
+
         ValidationResponse response = new ValidationResponse();
         response.setMatch(false);
         response.setCorrelationId(request.getCorrelationId());
 
         String client = request.getClient();
+        String url = request.getUrl();
 
-        List<Expression> expressions = new ArrayList<>();
-        globalWhitelistRepository.findAll().forEach(expressions::add);
-        clientWhitelistRepository.findByClient(client).forEach(expressions::add);
+        Page<Expression> expressions;
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
 
-        for (Expression expression : expressions) {
-            String regex = expression.getRegex();
+        loop:
+        do {
+            expressions = globalWhitelistRepository.findAll(pageable);
 
-            if (Pattern.matches(regex, request.getUrl())) {
-                response.setMatch(true);
-                response.setRegex(regex);
-                break;
+            for (Expression expression : expressions) {
+                String regex = expression.getRegex();
+
+                if (Pattern.matches(regex, url)) {
+                    response.setMatch(true);
+                    response.setRegex(regex);
+                    break loop;
+                }
             }
-        }
+
+            pageable = pageable.next();
+        } while (expressions.hasNext());
+
+        pageable = pageable.first();
+        loop:
+        do {
+            expressions = clientWhitelistRepository.findByClient(client, pageable);
+
+            for (Expression expression : expressions) {
+                String regex = expression.getRegex();
+
+                if (Pattern.matches(regex, url)) {
+                    response.setMatch(true);
+                    response.setRegex(regex);
+                    break loop;
+                }
+            }
+
+            pageable = pageable.next();
+        } while (expressions.hasNext());
 
         LOGGER.info("Send " + response.toString());
+        LOGGER.info("Elapsed time: " + (System.currentTimeMillis() - start));
         validationTemplate.convertAndSend(response);
     }
 }

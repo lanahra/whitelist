@@ -48,6 +48,8 @@ public class ServiceConfiguration implements RabbitListenerConfigurer {
     public SimpleRabbitListenerContainerFactory insertionListenerContainerFactory() {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(rabbitConnectionFactory);
+        factory.setConcurrentConsumers(3);
+        factory.setMaxConcurrentConsumers(10);
         factory.setMessageConverter(new Jackson2JsonMessageConverter());
         factory.setAfterReceivePostProcessors(jsonPostProcessor());
         return factory;
