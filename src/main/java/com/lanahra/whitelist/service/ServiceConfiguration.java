@@ -1,5 +1,6 @@
 package com.lanahra.whitelist.service;
 
+import java.util.concurrent.Executor;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Message;
@@ -17,10 +18,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.Validator;
 
 @Configuration
 @EnableRabbit
+@EnableAsync
 public class ServiceConfiguration implements RabbitListenerConfigurer {
 
     @Autowired
@@ -45,11 +49,22 @@ public class ServiceConfiguration implements RabbitListenerConfigurer {
     private Integer numberValidationConsumers;
 
     @Bean
+    public Executor asyncExecutor() {
+        int cores = Runtime.getRuntime().availableProcessors();
+
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(cores);
+        executor.setMaxPoolSize(cores);
+        executor.setThreadNamePrefix("whitelist-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean
     public SimpleRabbitListenerContainerFactory insertionListenerContainerFactory() {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(rabbitConnectionFactory);
         factory.setConcurrentConsumers(3);
-        factory.setMaxConcurrentConsumers(10);
         factory.setMessageConverter(new Jackson2JsonMessageConverter());
         factory.setAfterReceivePostProcessors(jsonPostProcessor());
         return factory;
