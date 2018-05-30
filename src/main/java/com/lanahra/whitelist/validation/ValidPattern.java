@@ -12,7 +12,7 @@ import javax.validation.Payload;
 @Constraint(validatedBy=ValidPatternValidator.class)
 public @interface ValidPattern {
 
-    String message() default "Not a valid RegEx";
+    String message() default "not a valid regex";
 
     Class<?>[] groups() default {};
 

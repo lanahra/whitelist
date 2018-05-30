@@ -15,7 +15,7 @@ public class ValidPatternValidator implements ConstraintValidator<ValidPattern, 
     public boolean isValid(String regex, ConstraintValidatorContext context) {
 
         if (regex == null) {
-            return false;
+            return true;
         }
 
         try {
