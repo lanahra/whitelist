@@ -35,18 +35,22 @@ public class Service {
     @Autowired
     private ClientWhitelistRepository clientWhitelistRepository;
 
-    public void processExpressionInsertion(Expression expression) {
+    public Expression processExpressionInsertion(Expression expression) {
         LOGGER.info("Process " + expression.toString());
+
+        Expression save = null;
 
         try {
             if (expression.getClient() == null) {
-                globalWhitelistRepository.save(new GlobalExpression(expression));
+                save = globalWhitelistRepository.save(new GlobalExpression(expression));
             } else {
-                clientWhitelistRepository.save(new ClientExpression(expression));
+                save = clientWhitelistRepository.save(new ClientExpression(expression));
             }
         } catch (DataIntegrityViolationException e) {
-            LOGGER.info("Create Failed: " + e.getRootCause().toString());
+            LOGGER.info("Create Failed: " + e.getMessage());
         }
+
+        return save;
     }
 
     public ValidationResponse processExpressionValidation(ValidationRequest request) {
