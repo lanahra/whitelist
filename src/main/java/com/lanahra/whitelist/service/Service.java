@@ -22,6 +22,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+/**
+ * Service
+ * Responsible for persisting Expressions in the appropriate repository and
+ * searching for a matching expression on validation, if any
+ */
 @Component
 public class Service {
 
@@ -35,6 +40,14 @@ public class Service {
     @Autowired
     private ClientWhitelistRepository clientWhitelistRepository;
 
+    /**
+     * Process Expression insertion in the repository
+     * If client is null, then Expression is persisted in the Global Whitelist,
+     * else, it is persisted in the Client Whitelist.
+     *
+     * @return Expression if successfuly persisted
+     * @return null otherwise
+     */
     public Expression processExpressionInsertion(Expression expression) {
         LOGGER.info("Process " + expression.toString());
 
@@ -53,6 +66,16 @@ public class Service {
         return save;
     }
 
+    /**
+     * Process Expression validation
+     * Given a request with a client and an URL, search through the repository
+     * for a regular expression that matches the URL
+     *
+     * @return ValidationResponse
+     *     match true if found a matching regular expression, false otherwise
+     *     regex regular expression if found, null otherwise
+     *     correlationId id for correlation with ValidationRequest
+     */
     public ValidationResponse processExpressionValidation(ValidationRequest request) {
         LOGGER.info("Process " + request.toString());
 
@@ -99,6 +122,16 @@ public class Service {
         return response;
     }
 
+    /**
+     * Match URL
+     * Search for an Expression that matches the URL, this is a single
+     * concurrent unit of processing, looking through a single Page of
+     * Expressions from either the Global or Client Whitelist, returns
+     * CompletableFuture that can be resolved later.
+     *
+     * @return CompletableFuture with matching regular expression if found
+     * @return CompletableFuture with null otherwise.
+     */
     @Async
     private CompletableFuture<String> matchExpressions(String url, Page<Expression> expressions) {
         String response = null;
@@ -115,6 +148,12 @@ public class Service {
         return CompletableFuture.completedFuture(response);
     }
 
+    /**
+     * Complete any not null future
+     * Given a List of futures, returns the first one that is not null, in
+     * other words, returns the first CompletableFuture with a matching regular
+     * expression.
+     */
     private static <T> CompletableFuture<T> anyNotNull(List<? extends CompletionStage<? extends T>> futures) {
         CompletableFuture<T> result = new CompletableFuture<>();
 

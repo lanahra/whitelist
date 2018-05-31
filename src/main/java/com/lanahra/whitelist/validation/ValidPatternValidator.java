@@ -5,12 +5,19 @@ import java.util.regex.PatternSyntaxException;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+/**
+ * Implementation of ValidPattern Annotation
+ */
 public class ValidPatternValidator implements ConstraintValidator<ValidPattern, String> {
 
     @Override
     public void initialize(ValidPattern validPattern) {
     }
 
+    /**
+     * @return true if regular expression is null or valid
+     * @return false if regular expression is not valid
+     */
     @Override
     public boolean isValid(String regex, ConstraintValidatorContext context) {
 

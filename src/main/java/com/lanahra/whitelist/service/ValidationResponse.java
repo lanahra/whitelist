@@ -1,5 +1,12 @@
 package com.lanahra.whitelist.service;
 
+/**
+ * Outgoing Validation Response
+ * Once the ValidationRequest is processed, use this class the send back
+ * response
+ *
+ * @see ValidationRequest
+ */
 public class ValidationResponse {
 
     private Boolean match;

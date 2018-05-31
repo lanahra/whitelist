@@ -4,6 +4,11 @@ import org.hibernate.validator.constraints.URL;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+/**
+ * Incoming Validation Request
+ * Request for a URL validation for a client, must be validate through this
+ * class
+ */
 public class ValidationRequest {
 
     @NotNull

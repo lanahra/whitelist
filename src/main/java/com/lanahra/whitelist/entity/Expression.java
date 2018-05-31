@@ -10,6 +10,18 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+/**
+ * Expression superclass
+ *
+ * This class is used to validate incoming messages to the service, the
+ * incoming message must have this format and be valid under the fields
+ * constraints, no table is created for Expression, it must be further
+ * specialized into either ClientExpression, if the client field is not null,
+ * or GlobalExpression otherwise.
+ *
+ * @see ClientExpression
+ * @see GlobalExpression
+ */
 @MappedSuperclass
 public class Expression {
 

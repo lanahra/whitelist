@@ -7,6 +7,12 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
+/**
+ * ValidPattern Annotation
+ * Use the ValidPattern annotation to validate regular expression String
+ *
+ * @see ValidPatternValidation
+ */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy=ValidPatternValidator.class)
