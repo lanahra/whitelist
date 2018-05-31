@@ -23,7 +23,7 @@ public class ValidationRequestTest {
     @Test
     public void testClientNull() {
         ValidationRequest request = new ValidationRequest();
-        request.setUrl("url");
+        request.setUrl("https://validurl.com");
         request.setCorrelationId(0);
 
         Set<ConstraintViolation<ValidationRequest>> violations = validator.validate(request);
@@ -52,7 +52,7 @@ public class ValidationRequestTest {
     public void testCorrelationIdNull() {
         ValidationRequest request = new ValidationRequest();
         request.setClient("client");
-        request.setUrl("url");
+        request.setUrl("https://validurl.com");
 
         Set<ConstraintViolation<ValidationRequest>> violations = validator.validate(request);
 
@@ -66,7 +66,7 @@ public class ValidationRequestTest {
     public void testClientBlank() {
         ValidationRequest request = new ValidationRequest();
         request.setClient("");
-        request.setUrl("url");
+        request.setUrl("https://validurl.com");
         request.setCorrelationId(0);
 
         Set<ConstraintViolation<ValidationRequest>> violations = validator.validate(request);
@@ -108,7 +108,7 @@ public class ValidationRequestTest {
             "abcdefghijklmnopq"
         );
 
-        request.setUrl("url");
+        request.setUrl("https://validurl.com");
         request.setCorrelationId(0);
 
         Set<ConstraintViolation<ValidationRequest>> violations = validator.validate(request);
@@ -127,14 +127,14 @@ public class ValidationRequestTest {
 
         // 129 characters String
         request.setUrl(
+            "http://abcdefghi" +
             "abcdefghijklmnop" +
             "abcdefghijklmnop" +
             "abcdefghijklmnop" +
             "abcdefghijklmnop" +
             "abcdefghijklmnop" +
             "abcdefghijklmnop" +
-            "abcdefghijklmnop" +
-            "abcdefghijklmnopq"
+            "abcdefghijklmnop.com"
         );
 
         request.setCorrelationId(0);
@@ -148,10 +148,25 @@ public class ValidationRequestTest {
     }
 
     @Test
+    public void testUrlInvalid() {
+        ValidationRequest request = new ValidationRequest();
+        request.setClient("client");
+        request.setUrl("shouldfail");
+        request.setCorrelationId(0);
+
+        Set<ConstraintViolation<ValidationRequest>> violations = validator.validate(request);
+
+        assertThat(violations.size()).isEqualTo(1);
+
+        assertThat(violations.iterator().next().getMessage())
+            .isEqualTo("must be a valid URL");
+    }
+
+    @Test
     public void testValid() {
         ValidationRequest request = new ValidationRequest();
         request.setClient("client");
-        request.setUrl("url");
+        request.setUrl("https://validurl.com");
         request.setCorrelationId(0);
 
         Set<ConstraintViolation<ValidationRequest>> violations = validator.validate(request);

@@ -1,5 +1,6 @@
 package com.lanahra.whitelist.service;
 
+import org.hibernate.validator.constraints.URL;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -9,6 +10,7 @@ public class ValidationRequest {
     @Size(min = 1, max = 128)
     private String client;
 
+    @URL
     @NotNull
     @Size(min = 1, max = 128)
     private String url;
