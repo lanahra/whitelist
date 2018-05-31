@@ -12,8 +12,6 @@ app:
     RABBITMQ_USERNAME: guest
     RABBITMQ_PASSWORD: guest
     JDBC_URL: jdbc:mysql://mysql:3306/axr_challenge?user=root&password=secret
-  volumes:
-    - ~/.m2:/root/.m2
   links:
     - mysql:mysql
     - rabbitmq:rabbitmq
@@ -25,5 +23,4 @@ mysql:
 rabbitmq:
   image: rabbitmq:3.6-management
   ports:
-    - 5672:5672
     - 15672:15672
